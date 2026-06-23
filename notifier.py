@@ -21,18 +21,28 @@ def _chat_id() -> str:
     return os.environ["TELEGRAM_CHAT_ID"]
 
 
-def _format(incident: Incident, prefix: str) -> str:
+RESOLVED_STATUSES = {"Resolved"}
+
+
+def _emoji(incident: Incident, is_new: bool) -> str:
+    latest = incident.updates[0]
+    if latest.status in RESOLVED_STATUSES:
+        return "\u2705"
+    return "\u274c" if is_new else "\u2757"
+
+
+def _format(incident: Incident, emoji: str) -> str:
     latest = incident.updates[0]
     return (
-        f"<b>[{prefix}] {incident.title}</b>\n"
-        f"<b>{latest.status}</b> — {latest.message}\n"
+        f"{emoji} <b>{incident.title}</b>\n"
+        f"<b>{latest.status}</b> \u2014 {latest.message}\n"
         f"{latest.timestamp}\n"
         f"{incident.link}"
     )
 
 
 async def send_new_incident(incident: Incident) -> None:
-    text = _format(incident, "Novo")
+    text = _format(incident, _emoji(incident, is_new=True))
     try:
         await _bot().send_message(chat_id=_chat_id(), text=text, parse_mode="HTML", disable_web_page_preview=True)
         logging.info("Novo incidente notificado: %s", incident.guid)
@@ -41,7 +51,7 @@ async def send_new_incident(incident: Incident) -> None:
 
 
 async def send_update(incident: Incident) -> None:
-    text = _format(incident, "Atualização")
+    text = _format(incident, _emoji(incident, is_new=False))
     try:
         await _bot().send_message(chat_id=_chat_id(), text=text, parse_mode="HTML", disable_web_page_preview=True)
         logging.info("Atualização notificada: %s", incident.guid)
