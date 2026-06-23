@@ -1,3 +1,4 @@
+import asyncio
 import os
 import logging
 
@@ -32,11 +33,11 @@ def _emoji(incident: Incident, is_new: bool) -> str:
     return "\u274c" if is_new else "\u2757"
 
 
-def _format(incident: Incident, emoji: str, message: str, status: str | None = None) -> str:
+def _format(incident: Incident, emoji: str, message: str, title: str | None = None) -> str:
     latest = incident.updates[0]
-    label = status or latest.status
+    label = latest.status
     return (
-        f"{emoji} <b>{incident.title}</b>\n"
+        f"{emoji} <b>{title or incident.title}</b>\n"
         f"<b>{label}</b> \u2014 {message}\n"
         f"{latest.timestamp}\n"
         f"{incident.link}"
@@ -45,8 +46,11 @@ def _format(incident: Incident, emoji: str, message: str, status: str | None = N
 
 async def _send(incident: Incident, emoji: str, log_action: str) -> None:
     latest = incident.updates[0]
-    msg = await translate(latest.message)
-    text = _format(incident, emoji, msg)
+    title, msg = await asyncio.gather(
+        translate(incident.title),
+        translate(latest.message),
+    )
+    text = _format(incident, emoji, msg, title)
     try:
         await _bot().send_message(chat_id=_chat_id(), text=text, parse_mode="HTML", disable_web_page_preview=True)
         logging.info("%s notificado: %s", log_action, incident.guid)
