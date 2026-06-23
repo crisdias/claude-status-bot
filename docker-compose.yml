@@ -6,3 +6,9 @@ services:
       TELEGRAM_CHAT_ID: ""
       POLL_INTERVAL_SECONDS: "300"
       STATE_FILE: /app/state.json
+      LLM_PROVIDER: ""
+      TRANSLATE_TO: ""
+      OPENROUTER_KEY: ""
+      OPENROUTER_MODEL: ""
+      OLLAMA_ENDPOINT: ""
+      OLLAMA_MODEL: ""
