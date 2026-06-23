@@ -1,0 +1,8 @@
+services:
+  bot:
+    build: .
+    environment:
+      TELEGRAM_BOT_TOKEN: ""
+      TELEGRAM_CHAT_ID: ""
+      POLL_INTERVAL_SECONDS: "300"
+      STATE_FILE: /app/state.json
