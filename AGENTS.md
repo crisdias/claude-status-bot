@@ -10,6 +10,7 @@ Telegram bot que monitora mudanças de status do Claude pelo RSS em https://stat
 | `rss_monitor.py` | Fetch + parse do RSS Statuspage |
 | `notifier.py` | Envio de mensagens via Telegram |
 | `state.py` | Persistência de estado em `state.json` (guids + contagem de updates vistos) |
+| `translator.py` | Tradução opcional via OpenRouter ou Ollama |
 | `requirements.txt` | Dependências (python-telegram-bot, httpx, feedparser, python-dotenv) |
 
 ## Setup
@@ -37,6 +38,12 @@ cp .env.example .env   # preencher TELEGRAM_BOT_TOKEN e TELEGRAM_CHAT_ID
 | `TELEGRAM_CHAT_ID` | sim | — |
 | `POLL_INTERVAL_SECONDS` | não | `300` |
 | `STATE_FILE` | não | `state.json` |
+| `LLM_PROVIDER` | não (tradução) | — (`openrouter` ou `ollama`) |
+| `TRANSLATE_TO` | não | — (ex.: `pt-br`) |
+| `OPENROUTER_KEY` | se provider=openrouter | — |
+| `OPENROUTER_MODEL` | não | `meta-llama/llama-3.1-8b-instruct` |
+| `OLLAMA_ENDPOINT` | não | `http://localhost:11434` |
+| `OLLAMA_MODEL` | não | `gemma3:4b` |
 
 ## Notas
 

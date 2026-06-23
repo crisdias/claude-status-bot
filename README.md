@@ -33,6 +33,12 @@ cp .env.example .env
 | `TELEGRAM_CHAT_ID` | yes | — |
 | `POLL_INTERVAL_SECONDS` | no | `300` |
 | `STATE_FILE` | no | `state.json` |
+| `LLM_PROVIDER` | no (translation) | — (`openrouter` or `ollama`) |
+| `TRANSLATE_TO` | no | — (e.g. `pt-br`) |
+| `OPENROUTER_KEY` | if provider=openrouter | — |
+| `OPENROUTER_MODEL` | no | `meta-llama/llama-3.1-8b-instruct` |
+| `OLLAMA_ENDPOINT` | no | `http://localhost:11434` |
+| `OLLAMA_MODEL` | no | `gemma3:4b` |
 
 ## Test
 
@@ -48,4 +54,5 @@ cp .env.example .env
 | `rss_monitor.py` | RSS fetch + parse |
 | `notifier.py` | Telegram message dispatch |
 | `state.py` | JSON state persistence |
+| `translator.py` | Optional LLM translation (OpenRouter / Ollama) |
 | `test_notify.py` | Quick connectivity test |
