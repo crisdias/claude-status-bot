@@ -43,7 +43,9 @@ cp .env.example .env
 ## Test
 
 ```bash
-.venv/bin/python test_notify.py
+.venv/bin/python test_notify.py     # Telegram connectivity
+.venv/bin/python test_ollama.py      # Ollama translation
+.venv/bin/python test_openrouter.py  # OpenRouter translation
 ```
 
 ## Project
@@ -55,4 +57,6 @@ cp .env.example .env
 | `notifier.py` | Telegram message dispatch |
 | `state.py` | JSON state persistence |
 | `translator.py` | Optional LLM translation (OpenRouter / Ollama) |
-| `test_notify.py` | Quick connectivity test |
+| `test_notify.py` | Telegram connectivity test |
+| `test_ollama.py` | Ollama translation test |
+| `test_openrouter.py` | OpenRouter translation test |
