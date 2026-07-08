@@ -1,9 +1,12 @@
 import os
+import re
 import logging
 
 import httpx
 
 _cache: dict[str, str] = {}
+
+_PROTECTED_NAMES = {"Claude", "Opus", "Sonnet", "Haiku", "Mythos", "Fable"}
 
 OPENROUTER_DEFAULT = "meta-llama/llama-3.1-8b-instruct"
 OLLAMA_DEFAULT_MODEL = "gemma3:4b"
@@ -26,13 +29,27 @@ async def translate(text: str) -> str:
     if cached is not None:
         return cached
 
+    # protege nomes de modelos contra tradução
+    protected = {}
+    def _protect(m: re.Match) -> str:
+        placeholder = f"\x00PROTECTED_{len(protected)}\x00"
+        protected[placeholder] = m.group(0)
+        return placeholder
+    text_protected = re.sub(
+        r"\b(?:" + "|".join(re.escape(n) for n in _PROTECTED_NAMES) + r")\b",
+        _protect,
+        text,
+    )
+
     prompt = (
         f"Translate the following text to {target}. "
-        f"Return ONLY the translation, nothing else.\n\nText: {text}"
+        f"Return ONLY the translation, nothing else.\n\nText: {text_protected}"
     )
 
     try:
         result = await _call_llm(prompt, provider)
+        for placeholder, original in protected.items():
+            result = result.replace(placeholder, original)
         _cache[cache_key] = result
         return result
     except Exception as e:
