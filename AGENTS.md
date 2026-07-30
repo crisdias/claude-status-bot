@@ -35,7 +35,7 @@ cp .env.example .env   # preencher TELEGRAM_BOT_TOKEN e TELEGRAM_CHAT_ID
 | Variável | Obrigatória | Default |
 |---|---|---|
 | `TELEGRAM_BOT_TOKEN` | sim | — |
-| `TELEGRAM_CHAT_ID` | sim | — |
+| `TELEGRAM_CHAT_ID` | sim | — (um ID ou uma lista separada por vírgulas) |
 | `POLL_INTERVAL_SECONDS` | não | `300` |
 | `STATE_FILE` | não | `state.json` |
 | `LLM_PROVIDER` | não (tradução) | — (`openrouter` ou `ollama`) |

@@ -10,6 +10,7 @@ import sys
 from dotenv import load_dotenv
 from telegram import Bot
 from telegram.error import TelegramError
+from notifier import get_chat_ids
 
 load_dotenv()
 
@@ -27,11 +28,21 @@ async def main():
         "<b>[Teste] claude-status-bot</b>\n"
         "Configuração OK — o bot está funcionando."
     )
-    try:
-        await bot.send_message(chat_id=CHAT_ID, text=text, parse_mode="HTML", disable_web_page_preview=True)
-        print("Mensagem de teste enviada com sucesso!")
-    except TelegramError as e:
-        print(f"ERRO ao enviar: {e}")
+    failures = 0
+    for chat_id in get_chat_ids():
+        try:
+            await bot.send_message(
+                chat_id=chat_id,
+                text=text,
+                parse_mode="HTML",
+                disable_web_page_preview=True,
+            )
+            print(f"Mensagem de teste enviada com sucesso para o chat {chat_id}!")
+        except TelegramError as e:
+            failures += 1
+            print(f"ERRO ao enviar para o chat {chat_id}: {e}")
+
+    if failures:
         sys.exit(1)
 
 

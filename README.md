@@ -30,7 +30,7 @@ cp .env.example .env
 | Variable | Required | Default |
 |---|---|---|
 | `TELEGRAM_BOT_TOKEN` | yes | — |
-| `TELEGRAM_CHAT_ID` | yes | — |
+| `TELEGRAM_CHAT_ID` | yes | — (one ID or a comma-separated list) |
 | `POLL_INTERVAL_SECONDS` | no | `300` |
 | `STATE_FILE` | no | `state.json` |
 | `LLM_PROVIDER` | no (translation) | — (`openrouter` or `ollama`) |

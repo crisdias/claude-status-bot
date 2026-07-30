@@ -19,8 +19,17 @@ def _bot() -> Bot:
     return _bot_instance
 
 
-def _chat_id() -> str:
-    return os.environ["TELEGRAM_CHAT_ID"]
+def get_chat_ids() -> list[str]:
+    """Return all configured Telegram destinations.
+
+    TELEGRAM_CHAT_ID accepts either one chat ID or a comma-separated list.
+    Whitespace and empty entries are ignored.
+    """
+    return [
+        chat_id.strip()
+        for chat_id in os.environ["TELEGRAM_CHAT_ID"].split(",")
+        if chat_id.strip()
+    ]
 
 
 RESOLVED_STATUSES = {"Resolved"}
@@ -51,11 +60,27 @@ async def _send(incident: Incident, emoji: str, log_action: str) -> None:
         translate(latest.message),
     )
     text = _format(incident, emoji, msg, title)
-    try:
-        await _bot().send_message(chat_id=_chat_id(), text=text, parse_mode="HTML", disable_web_page_preview=True)
-        logging.info("%s notificado: %s", log_action, incident.guid)
-    except TelegramError as e:
-        logging.error("Falha ao notificar %s: %s", log_action, e)
+    for chat_id in get_chat_ids():
+        try:
+            await _bot().send_message(
+                chat_id=chat_id,
+                text=text,
+                parse_mode="HTML",
+                disable_web_page_preview=True,
+            )
+            logging.info(
+                "%s notificado no chat %s: %s",
+                log_action,
+                chat_id,
+                incident.guid,
+            )
+        except TelegramError as e:
+            logging.error(
+                "Falha ao notificar %s no chat %s: %s",
+                log_action,
+                chat_id,
+                e,
+            )
 
 
 async def send_new_incident(incident: Incident) -> None:
