@@ -6,7 +6,22 @@ import httpx
 
 _cache: dict[str, str] = {}
 
-_PROTECTED_NAMES = {"Claude", "Opus", "Sonnet", "Haiku", "Mythos", "Fable"}
+_PROTECTED_NAMES = [
+    "Claude Code Review",
+    "Claude Code on the web",
+    "Claude Code",
+    "Claude Cowork",
+    "Cowork Remote",
+    "Claude Tag",
+    "Claude",
+    "Opus",
+    "Sonnet",
+    "Haiku",
+    "Mythos",
+    "Fable",
+]
+# nomes compostos precisam ser testados antes dos nomes simples que os compõem
+_PROTECTED_NAMES.sort(key=len, reverse=True)
 
 OPENROUTER_DEFAULT = "meta-llama/llama-3.1-8b-instruct"
 OLLAMA_DEFAULT_MODEL = "gemma3:4b"
