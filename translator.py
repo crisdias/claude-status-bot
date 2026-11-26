@@ -24,11 +24,16 @@ _PROTECTED_NAMES = [
 _PROTECTED_NAMES.sort(key=len, reverse=True)
 
 OPENROUTER_DEFAULT = "meta-llama/llama-3.1-8b-instruct"
-OLLAMA_DEFAULT_MODEL = "gemma3:4b"
+OLLAMA_DEFAULT_MODEL = "gemma4:12b"
+# a primeira chamada carrega o modelo na GPU, o que pode levar mais de um minuto
+OLLAMA_DEFAULT_TIMEOUT = 240
 OLLAMA_DEFAULT_ENDPOINT = "http://localhost:11434"
+# libera a GPU logo depois da tradução
+OLLAMA_DEFAULT_KEEP_ALIVE = "1m"
+MAX_TOKENS = 1024
 
 
-def _cfg() -> tuple[str, str, str]:
+def _cfg() -> tuple[str, str]:
     provider = os.environ.get("LLM_PROVIDER", "")
     target = os.environ.get("TRANSLATE_TO", "")
     return provider, target
@@ -68,7 +73,11 @@ async def translate(text: str) -> str:
         _cache[cache_key] = result
         return result
     except Exception as e:
-        logging.warning("Falha na tradução: %s", e)
+        logging.error(
+            "Falha na tradução (%s), mensagem enviada no original: %s",
+            provider,
+            e or type(e).__name__,
+        )
         return text
 
 
@@ -97,7 +106,7 @@ async def _call_openrouter(prompt: str) -> str:
                 "model": model,
                 "messages": [{"role": "user", "content": prompt}],
                 "temperature": 0,
-                "max_tokens": 200,
+                "max_tokens": MAX_TOKENS,
             },
             timeout=30,
         )
@@ -109,6 +118,7 @@ async def _call_openrouter(prompt: str) -> str:
 async def _call_ollama(prompt: str) -> str:
     endpoint = os.environ.get("OLLAMA_ENDPOINT", "") or OLLAMA_DEFAULT_ENDPOINT
     model = os.environ.get("OLLAMA_MODEL", "") or OLLAMA_DEFAULT_MODEL
+    timeout = float(os.environ.get("OLLAMA_TIMEOUT_SECONDS", "") or OLLAMA_DEFAULT_TIMEOUT)
 
     async with httpx.AsyncClient() as client:
         resp = await client.post(
@@ -117,10 +127,14 @@ async def _call_ollama(prompt: str) -> str:
                 "model": model,
                 "prompt": prompt,
                 "stream": False,
-                "options": {"temperature": 0, "num_predict": 200},
+                "keep_alive": os.environ.get("OLLAMA_KEEP_ALIVE", "") or OLLAMA_DEFAULT_KEEP_ALIVE,
+                "options": {"temperature": 0, "num_predict": MAX_TOKENS},
             },
-            timeout=60,
+            timeout=timeout,
         )
-        resp.raise_for_status()
-        data = resp.json()
-        return data.get("response", "").strip()
+        if resp.status_code >= 400:
+            raise RuntimeError(f"Ollama {resp.status_code} com {model}: {resp.text[:200]}")
+        result = resp.json().get("response", "").strip()
+        if not result:
+            raise RuntimeError(f"Ollama devolveu resposta vazia com {model}")
+        return result

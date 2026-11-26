@@ -38,7 +38,12 @@ cp .env.example .env
 | `OPENROUTER_KEY` | if provider=openrouter | — |
 | `OPENROUTER_MODEL` | no | `meta-llama/llama-3.1-8b-instruct` |
 | `OLLAMA_ENDPOINT` | no | `http://localhost:11434` |
-| `OLLAMA_MODEL` | no | `gemma3:4b` |
+| `OLLAMA_MODEL` | no | `gemma4:12b` |
+| `OLLAMA_TIMEOUT_SECONDS` | no | `240` |
+| `OLLAMA_KEEP_ALIVE` | no | `1m` |
+| `NTFY_TOKEN` | no (error alerts) | — (alerts are off without it) |
+| `NTFY_URL` | no | `https://alertas.netcris.com.br/erros` |
+| `NTFY_DEDUP_SECONDS` | no | `3600` |
 
 ## Test
 

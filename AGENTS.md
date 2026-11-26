@@ -11,6 +11,7 @@ Telegram bot que monitora mudanças de status do Claude pelo RSS em https://stat
 | `notifier.py` | Envio de mensagens via Telegram |
 | `state.py` | Persistência de estado em `state.json` (guids + contagem de updates vistos) |
 | `translator.py` | Tradução opcional via OpenRouter ou Ollama |
+| `alerts.py` | Aviso no ntfy de todo log ERROR ou acima (agrupado: um por mensagem a cada hora) |
 | `requirements.txt` | Dependências (python-telegram-bot, httpx, feedparser, python-dotenv) |
 
 ## Setup
@@ -43,7 +44,12 @@ cp .env.example .env   # preencher TELEGRAM_BOT_TOKEN e TELEGRAM_CHAT_ID
 | `OPENROUTER_KEY` | se provider=openrouter | — |
 | `OPENROUTER_MODEL` | não | `meta-llama/llama-3.1-8b-instruct` |
 | `OLLAMA_ENDPOINT` | não | `http://localhost:11434` |
-| `OLLAMA_MODEL` | não | `gemma3:4b` |
+| `OLLAMA_MODEL` | não | `gemma4:12b` |
+| `OLLAMA_TIMEOUT_SECONDS` | não | `240` (a primeira chamada carrega o modelo) |
+| `OLLAMA_KEEP_ALIVE` | não | `1m` (tempo que o modelo fica na GPU depois da tradução) |
+| `NTFY_TOKEN` | não (avisos de erro) | — (sem ele, os avisos ficam desligados) |
+| `NTFY_URL` | não | `https://alertas.netcris.com.br/erros` |
+| `NTFY_DEDUP_SECONDS` | não | `3600` |
 
 ## Notas
 
