@@ -1,0 +1,16 @@
+
+
+# Exclude credentials and development artifacts from runtime images.
+.git
+.venv
+venv
+__pycache__
+**/__pycache__
+*.pyc
+.env
+.env.*
+**/.env
+**/.env.*
+docker-compose*.yml
+compose*.yaml
+.vscode
