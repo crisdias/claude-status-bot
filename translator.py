@@ -6,14 +6,12 @@ import httpx
 
 _cache: dict[str, str] = {}
 
-_PROTECTED_NAMES = {"Claude", "Opus", "Sonnet", "Haiku", "Mythos", "Fable"}
-
 OPENROUTER_DEFAULT = "meta-llama/llama-3.1-8b-instruct"
 OLLAMA_DEFAULT_MODEL = "gemma3:4b"
 OLLAMA_DEFAULT_ENDPOINT = "http://localhost:11434"
 
 
-def _cfg() -> tuple[str, str, str]:
+def _cfg() -> tuple[str, str]:
     provider = os.environ.get("LLM_PROVIDER", "")
     target = os.environ.get("TRANSLATE_TO", "")
     return provider, target
@@ -29,27 +27,17 @@ async def translate(text: str) -> str:
     if cached is not None:
         return cached
 
-    # protege nomes de modelos contra tradução
-    protected = {}
-    def _protect(m: re.Match) -> str:
-        placeholder = f"\x00PROTECTED_{len(protected)}\x00"
-        protected[placeholder] = m.group(0)
-        return placeholder
-    text_protected = re.sub(
-        r"\b(?:" + "|".join(re.escape(n) for n in _PROTECTED_NAMES) + r")\b",
-        _protect,
-        text,
-    )
-
     prompt = (
         f"Translate the following text to {target}. "
-        f"Return ONLY the translation, nothing else.\n\nText: {text_protected}"
+        "Keep product and model names exactly as written, in English "
+        "(e.g. Claude, Claude Code, Claude Cowork, Opus, Sonnet, Haiku, Mythos, Fable). "
+        f"Return ONLY the translation, nothing else.\n\nText: {text}"
     )
 
     try:
         result = await _call_llm(prompt, provider)
-        for placeholder, original in protected.items():
-            result = result.replace(placeholder, original)
+        if not result:
+            raise RuntimeError("resposta vazia do LLM")
         _cache[cache_key] = result
         return result
     except Exception as e:
@@ -82,7 +70,7 @@ async def _call_openrouter(prompt: str) -> str:
                 "model": model,
                 "messages": [{"role": "user", "content": prompt}],
                 "temperature": 0,
-                "max_tokens": 200,
+                "max_tokens": 1024,
             },
             timeout=30,
         )
@@ -102,9 +90,12 @@ async def _call_ollama(prompt: str) -> str:
                 "model": model,
                 "prompt": prompt,
                 "stream": False,
-                "options": {"temperature": 0, "num_predict": 200},
+                # modelos com raciocínio (ex.: gemma4) gastam o limite pensando
+                # e devolvem resposta vazia se o think ficar ligado
+                "think": False,
+                "options": {"temperature": 0, "num_predict": 1024},
             },
-            timeout=60,
+            timeout=120,
         )
         resp.raise_for_status()
         data = resp.json()
